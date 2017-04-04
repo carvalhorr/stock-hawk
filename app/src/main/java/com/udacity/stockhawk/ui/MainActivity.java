@@ -1,10 +1,16 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -13,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,7 +49,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.error)
     TextView error;
+    @BindView(R.id.main_coordinator_layout)
+    CoordinatorLayout coordinatorLayout;
     private StockAdapter adapter;
+
+    private NonExistingSymbolReceiver nonExistingSymbolReceiver;
 
     @Override
     public void onClick(String symbol) {
@@ -82,6 +93,24 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }).attachToRecyclerView(stockRecyclerView);
 
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (nonExistingSymbolReceiver == null) {
+            nonExistingSymbolReceiver = new NonExistingSymbolReceiver();
+        }
+
+        IntentFilter intentFilter = new IntentFilter(QuoteSyncJob.ACTION_NON_EXISTING_SYMBOL);
+        registerReceiver(nonExistingSymbolReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(nonExistingSymbolReceiver);
     }
 
     private boolean networkUp() {
@@ -185,5 +214,47 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void notifyNonExistingSymbol(String nonExistingSymbol) {
+
+        // display messate to user
+        String message = getString(R.string.error_non_existing_symbol) + nonExistingSymbol;
+
+        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_LONG)
+                .setAction("CLOSE", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                })
+                .setActionTextColor(fetchAccentColor())
+                .show();
+
+        // remove symbol from list
+        PrefUtils.removeStock(this, nonExistingSymbol);
+    }
+
+    private int fetchAccentColor() {
+        TypedValue typedValue = new TypedValue();
+
+        TypedArray a = this.obtainStyledAttributes(typedValue.data, new int[] { R.attr.colorAccent });
+        int color = a.getColor(0, 0);
+
+        a.recycle();
+
+        return color;
+    }
+
+    private class NonExistingSymbolReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(QuoteSyncJob.ACTION_NON_EXISTING_SYMBOL)) {
+                String nonExistingSymbol = intent.getStringExtra(QuoteSyncJob.EXTRA_SYMBOL);
+                notifyNonExistingSymbol(nonExistingSymbol);
+            }
+        }
+
     }
 }
