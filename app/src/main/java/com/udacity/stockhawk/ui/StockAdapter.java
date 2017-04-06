@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.udacity.stockhawk.R;
@@ -69,6 +70,15 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
         holder.symbol.setText(cursor.getString(Contract.Quote.POSITION_SYMBOL));
         holder.price.setText(dollarFormat.format(cursor.getFloat(Contract.Quote.POSITION_PRICE)));
+        if (cursor.getInt(Contract.Quote.POSITION_VALID) == 0){
+            holder.itemView.setBackgroundResource(R.drawable.non_existing_symbol);
+            holder.message.setVisibility(View.VISIBLE);
+            holder.quoteInfo.setVisibility(View.GONE);
+        } else {
+            holder.itemView.setBackgroundResource(0);
+            holder.message.setVisibility(View.GONE);
+            holder.quoteInfo.setVisibility(View.VISIBLE);
+        }
 
 
         float rawAbsoluteChange = cursor.getFloat(Contract.Quote.POSITION_ABSOLUTE_CHANGE);
@@ -109,6 +119,8 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
     class StockViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+        View itemView;
+
         @BindView(R.id.symbol)
         TextView symbol;
 
@@ -118,8 +130,15 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
         @BindView(R.id.change)
         TextView change;
 
+        @BindView(R.id.message)
+        TextView message;
+
+        @BindView(R.id.quote_info)
+        LinearLayout quoteInfo;
+
         StockViewHolder(View itemView) {
             super(itemView);
+            this.itemView = itemView;
             ButterKnife.bind(this, itemView);
             itemView.setOnClickListener(this);
         }

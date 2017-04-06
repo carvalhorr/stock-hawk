@@ -53,8 +53,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     CoordinatorLayout coordinatorLayout;
     private StockAdapter adapter;
 
-    private NonExistingSymbolReceiver nonExistingSymbolReceiver;
-
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
@@ -93,24 +91,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }).attachToRecyclerView(stockRecyclerView);
 
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (nonExistingSymbolReceiver == null) {
-            nonExistingSymbolReceiver = new NonExistingSymbolReceiver();
-        }
-
-        IntentFilter intentFilter = new IntentFilter(QuoteSyncJob.ACTION_NON_EXISTING_SYMBOL);
-        registerReceiver(nonExistingSymbolReceiver, intentFilter);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(nonExistingSymbolReceiver);
     }
 
     private boolean networkUp() {
@@ -216,45 +196,4 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         return super.onOptionsItemSelected(item);
     }
 
-    private void notifyNonExistingSymbol(String nonExistingSymbol) {
-
-        // display messate to user
-        String message = getString(R.string.error_non_existing_symbol) + nonExistingSymbol;
-
-        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_LONG)
-                .setAction("CLOSE", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                    }
-                })
-                .setActionTextColor(fetchAccentColor())
-                .show();
-
-        // remove symbol from list
-        PrefUtils.removeStock(this, nonExistingSymbol);
-    }
-
-    private int fetchAccentColor() {
-        TypedValue typedValue = new TypedValue();
-
-        TypedArray a = this.obtainStyledAttributes(typedValue.data, new int[] { R.attr.colorAccent });
-        int color = a.getColor(0, 0);
-
-        a.recycle();
-
-        return color;
-    }
-
-    private class NonExistingSymbolReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(QuoteSyncJob.ACTION_NON_EXISTING_SYMBOL)) {
-                String nonExistingSymbol = intent.getStringExtra(QuoteSyncJob.EXTRA_SYMBOL);
-                notifyNonExistingSymbol(nonExistingSymbol);
-            }
-        }
-
-    }
 }

@@ -39,12 +39,6 @@ public final class QuoteSyncJob {
     private static final int PERIODIC_ID = 1;
     private static final int YEARS_OF_HISTORY = 2;
 
-    // Name of the action for non existing symbol
-    public static final String ACTION_NON_EXISTING_SYMBOL = "com.udacity.stockhawk.ACTION_NON_EXISTING_SYMBOL";
-
-    // Name of extra parameter containing the non existing symbol
-    public static final String EXTRA_SYMBOL = "symbol";
-
     private QuoteSyncJob() {
     }
 
@@ -81,22 +75,22 @@ public final class QuoteSyncJob {
 
 
                 Stock stock = quotes.get(symbol);
-                StockQuote quote = stock.getQuote();
+
+                float price = 0;
+                float change = 0;
+                float percentChange = 0;
+                String historyCsvString = "";
+                boolean valid = false;
 
 
-                if (!stock.isValid()) {
+                if (stock != null && stock.isValid()) {
 
-                    // Notify non existing symbol
-                    Intent nonExistingSymbolIntent = new Intent(ACTION_NON_EXISTING_SYMBOL);
-                    nonExistingSymbolIntent.putExtra(EXTRA_SYMBOL, symbol);
-                    context.getApplicationContext().sendBroadcast(nonExistingSymbolIntent);
+                    StockQuote quote = stock.getQuote();
 
-                } else {
-
-                    quote.getSymbol();
-                    float price = quote.getPrice().floatValue();
-                    float change = quote.getChange().floatValue();
-                    float percentChange = quote.getChangeInPercent().floatValue();
+                    valid = true;
+                    price = quote.getPrice().floatValue();
+                    change = quote.getChange().floatValue();
+                    percentChange = quote.getChangeInPercent().floatValue();
 
                     // WARNING! Don't request historical data for a stock that doesn't exist!
                     // The request will hang forever X_x
@@ -105,24 +99,20 @@ public final class QuoteSyncJob {
                     StringBuilder historyBuilder = new StringBuilder();
 
                     for (HistoricalQuote it : history) {
+
                         historyBuilder.append(it.getDate().getTimeInMillis());
                         historyBuilder.append(", ");
                         historyBuilder.append(it.getClose());
                         historyBuilder.append("\n");
+
                     }
 
-                    ContentValues quoteCV = new ContentValues();
-                    quoteCV.put(Contract.Quote.COLUMN_SYMBOL, symbol);
-                    quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
-                    quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
-                    quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
-
-
-                    quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
-
-                    quoteCVs.add(quoteCV);
+                    historyCsvString = historyBuilder.toString();
 
                 }
+
+                ContentValues quoteCV = createContentValues(symbol, price, change, percentChange, historyCsvString, valid);
+                quoteCVs.add(quoteCV);
 
             }
 
@@ -137,6 +127,20 @@ public final class QuoteSyncJob {
         } catch (IOException exception) {
             Timber.e(exception, "Error fetching stock quotes");
         }
+    }
+
+    private static ContentValues createContentValues(String symbol, float price, float change, float percentChange, String history, boolean valid) {
+
+        ContentValues quoteCV = new ContentValues();
+        quoteCV.put(Contract.Quote.COLUMN_SYMBOL, symbol);
+        quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
+        quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
+        quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
+        quoteCV.put(Contract.Quote.COLUMN_HISTORY, history);
+        quoteCV.put(Contract.Quote.COLUMN_VALID, valid);
+
+        return quoteCV;
+
     }
 
     private static void schedulePeriodic(Context context) {

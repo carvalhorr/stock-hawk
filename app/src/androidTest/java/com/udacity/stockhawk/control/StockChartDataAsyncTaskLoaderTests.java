@@ -6,28 +6,23 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.net.Uri;
 import android.support.test.runner.AndroidJUnit4;
-import android.test.ProviderTestCase2;
 import android.test.mock.MockContentProvider;
 import android.test.mock.MockContentResolver;
 import android.test.mock.MockContext;
-import android.test.mock.MockCursor;
 
 import com.github.mikephil.charting.data.Entry;
 import com.udacity.stockhawk.data.Contract;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.security.Provider;
 import java.util.List;
 
 import timber.log.Timber;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by carvalhorr on 4/5/17.
