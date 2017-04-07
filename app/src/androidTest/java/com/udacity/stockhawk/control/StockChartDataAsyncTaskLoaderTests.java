@@ -51,6 +51,7 @@ public class StockChartDataAsyncTaskLoaderTests {
         List<Entry> entries = loader.loadInBackground();
 
         assertEquals(12, entries.size());
+
     }
 
 
@@ -58,7 +59,6 @@ public class StockChartDataAsyncTaskLoaderTests {
 
         @Override
         public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-            Timber.d("called query on mock provider");
             Cursor c = mock(SQLiteCursor.class);
             when(c.getString(Contract.Quote.POSITION_HISTORY)).thenReturn(STOCK_HISTORY_STRING);
             when(c.getCount()).thenReturn(1);
