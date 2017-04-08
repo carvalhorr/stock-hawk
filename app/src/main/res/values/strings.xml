@@ -35,6 +35,8 @@
     <string name="content_description_add_new_stock_symbol">Add new stock symbol</string>
     <string name="stock_price_over_time">Stock price over time</string>
 
+    <string name="symbol_not_found">Sync error. Please make sure the symbol is correct.</string>
+
     <string name="runtime_message_missing_stock_symbol" translatable="false">Missing quote symbol.</string>
 
 </resources>
