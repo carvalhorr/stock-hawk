@@ -1,13 +1,25 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
+import android.net.Uri;
 import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.test.mock.MockContentProvider;
+import android.test.mock.MockContentResolver;
+import android.test.mock.MockContext;
 
 import com.udacity.stockhawk.R;
+import com.udacity.stockhawk.StockHawkApp;
+import com.udacity.stockhawk.data.Contract;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +29,8 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by carvalhorr on 4/6/17.
@@ -49,6 +63,7 @@ public class StockChartDetailsActivityTests {
      * Navigation test that makes sure the details activity is displayed.
      * <p>
      * It is relying on the data that already exist.
+     * TODO Add dependency injection to mock the data and not rely on existing components.
      *
      * @throws InterruptedException
      */
@@ -63,6 +78,40 @@ public class StockChartDetailsActivityTests {
         // make sure details acitivty is displayed
         onView(withId(R.id.stock_chart)).check(ViewAssertions.matches(isDisplayed()));
 
+    }
+
+    private ContentResolver getMockContentResolver() {
+        MockContentResolver resolver = new MockContentResolver();
+        resolver.addProvider(Contract.AUTHORITY, new MockStockContentProvider());
+        return resolver;
+
+    }
+
+    public class MockStockContentProvider extends MockContentProvider {
+
+        @Override
+        public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+            Cursor c = mock(SQLiteCursor.class);
+            when(c.getString(Contract.Quote.POSITION_HISTORY)).thenReturn(STOCK_HISTORY_STRING);
+            when(c.getInt(Contract.Quote.POSITION_VALID)).thenReturn(1);
+            when(c.getFloat(Contract.Quote.POSITION_PRICE)).thenReturn(1f);
+            when(c.getFloat(Contract.Quote.POSITION_PERCENTAGE_CHANGE)).thenReturn(1f);
+            when(c.getFloat(Contract.Quote.POSITION_ABSOLUTE_CHANGE)).thenReturn(1f);
+            when(c.getString(Contract.Quote.POSITION_SYMBOL)).thenReturn("GOOG");
+            when(c.getCount()).thenReturn(1);
+            return c;
+        }
+
+        @Override
+        public int bulkInsert(Uri uri, ContentValues[] values) {
+            return values.length;
+        }
+
+        @Override
+        public Uri insert(Uri uri, ContentValues values) {
+            getContext().getContentResolver().notifyChange(Contract.Quote.URI, null);
+            return Contract.Quote.makeUriForStock("1");
+        }
     }
 
 }

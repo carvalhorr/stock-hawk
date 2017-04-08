@@ -39,13 +39,32 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <activity
-            android:name=".ui.StockDetailsChartActivity"
+            android:name=".ui.history.StockDetailsChartActivity"
             android:label="@string/title_activity_stock_details_chart"
             android:parentActivityName=".ui.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.udacity.stockhawk.ui.MainActivity" />
         </activity>
+
+        <service
+            android:enabled="true"
+            android:name=".ui.widget.StockWidgetRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <receiver
+            android:name=".ui.widget.StockWidgetProvider"
+            android:label="Stock Hawk">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.udacity.stockhawk.ACTION_DATA_UPDATED" />
+                <action android:name="com.udacity.stockhawk.ACTION_STOCK_WIDGET_ITEM_CLICKED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info_stock"></meta-data>
+        </receiver>
+
     </application>
 
 </manifest>

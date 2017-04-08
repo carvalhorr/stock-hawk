@@ -23,9 +23,7 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin" />
+                android:layout_height="match_parent"/>
 
         </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -37,6 +35,7 @@
             android:layout_margin="16dp"
             android:onClick="button"
             android:src="@drawable/fab_plus"
+            android:contentDescription="@string/content_description_add_new_stock_symbol"
             app:backgroundTint="@color/material_blue_500"
             app:borderWidth="0dp"
             app:elevation="6dp"

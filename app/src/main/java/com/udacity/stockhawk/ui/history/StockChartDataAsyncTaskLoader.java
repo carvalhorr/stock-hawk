@@ -1,4 +1,4 @@
-package com.udacity.stockhawk.control;
+package com.udacity.stockhawk.ui.history;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
@@ -10,8 +10,11 @@ import com.udacity.stockhawk.data.Contract;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Async task loader responsible for querying a stock history from the database using a data provider
@@ -37,7 +40,13 @@ public class StockChartDataAsyncTaskLoader extends AsyncTaskLoader<List<Entry>> 
     public List<Entry> loadInBackground() {
 
         // query the history from the database
-        Cursor cursor = getContext().getContentResolver().query(Contract.Quote.makeUriForStock(stockSymbol), null, null, null, null);
+        Cursor cursor = getContext().getContentResolver().query(
+                Contract.Quote.makeUriForStock(stockSymbol),
+                Contract.Quote.QUOTE_COLUMNS.toArray(new String[Contract.Quote.QUOTE_COLUMNS.size()]),
+                null,
+                null,
+                null);
+
         if (cursor == null || cursor.getCount() != 1) {
             return null;
         }
@@ -46,6 +55,7 @@ public class StockChartDataAsyncTaskLoader extends AsyncTaskLoader<List<Entry>> 
         // get the CSV hostory data
         String stockHistory = cursor.getString(Contract.Quote.POSITION_HISTORY);
 
+        cursor.close();
 
         // create list of entries from the csv string for the chart
         List<Entry> entries = new ArrayList<Entry>();
@@ -55,7 +65,7 @@ public class StockChartDataAsyncTaskLoader extends AsyncTaskLoader<List<Entry>> 
 
             String[] line = scanner.nextLine().split(",");
 
-            long date = Long.parseLong(line[0].trim(), 10);
+            long date = TimeUnit.MILLISECONDS.toDays(Long.parseLong(line[0].trim(), 10));
             float closeQuote = Float.parseFloat(line[1].trim());
 
             Entry entry = new Entry(date, closeQuote);
@@ -63,6 +73,12 @@ public class StockChartDataAsyncTaskLoader extends AsyncTaskLoader<List<Entry>> 
         }
         scanner.close();
 
+        Collections.sort(entries, new Comparator<Entry>() {
+            @Override
+            public int compare(Entry o1, Entry o2) {
+                return o1.getX() > o2.getX() ? 1 : -1;
+            }
+        });
         return entries;
     }
 }

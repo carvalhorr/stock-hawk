@@ -44,6 +44,9 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
     }
 
     void setCursor(Cursor cursor) {
+        if (this.cursor != null) {
+            this.cursor.close();
+        }
         this.cursor = cursor;
         notifyDataSetChanged();
     }
@@ -70,7 +73,7 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
         holder.symbol.setText(cursor.getString(Contract.Quote.POSITION_SYMBOL));
         holder.price.setText(dollarFormat.format(cursor.getFloat(Contract.Quote.POSITION_PRICE)));
-        if (cursor.getInt(Contract.Quote.POSITION_VALID) == 0){
+        if (cursor.getInt(Contract.Quote.POSITION_VALID) == 0) {
             holder.itemView.setBackgroundResource(R.drawable.non_existing_symbol);
             holder.message.setVisibility(View.VISIBLE);
             holder.quoteInfo.setVisibility(View.GONE);

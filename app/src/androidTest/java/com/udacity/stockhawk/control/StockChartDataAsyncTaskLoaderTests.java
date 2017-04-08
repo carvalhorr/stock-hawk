@@ -12,13 +12,12 @@ import android.test.mock.MockContext;
 
 import com.github.mikephil.charting.data.Entry;
 import com.udacity.stockhawk.data.Contract;
+import com.udacity.stockhawk.ui.history.StockChartDataAsyncTaskLoader;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-
-import timber.log.Timber;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
