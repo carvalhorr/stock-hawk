@@ -5,6 +5,7 @@ This is the code for project 3 in Udacity's [Android Developer Nanodegree](https
 The base code was provided and some bugs needed to be fixed and new functionality was required to be added. 
 
 ## Changes made
+### Bug fix
 The app had a bug that made it crash when the user entered a non existing stock code.
 
 To fix this problem all the layers in the app where changed to provide a good user experince instead of just preventing the crash from happenning. 
